@@ -11,11 +11,11 @@ const getToken = (user) => jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '
 
 //Creación de Metodo getUserFromToken para las mutaciones que lo requieren
 const getUserFromToken = async (token, db) => {
-    //if (!token) { return null }
+    if (!token) { return null }
     const tokenData = jwt.verify(token, JWT_SECRET); //funcion de la libreria jsonwebtoken
-    //if (!tokenData?.id) {
-    // return null;
-    //}
+    if (!tokenData?.id) {
+     return null;
+    }
                 //busca el usuario con el _id igual al que reresa el ObjectId
     return await db.collection('usuarios').findOne({ _id: ObjectId(tokenData.id) });  
 }
@@ -61,6 +61,25 @@ const resolvers = {
                 user,
                 token: getToken(user), //asignamos un getToken al campo token
             }
+        },
+
+        updateUser: async (_, data, { db, user }) => {
+            //const hashedPassword = bcrypt.hashSync(data.password) 
+            if (!user) { console.log("No esta autenticado, por favor inicie sesión.") }  //Solo usuarios correctamente logueados lo pueden hacer
+
+            const result = await db.collection("usuarios")
+                .updateOne({
+                    _id: ObjectId(data.id)
+                   
+                },
+                {
+                    $set: data,
+                    
+                },{
+                    //password: hashedPassword
+                })
+                
+            return await db.collection("usuarios").findOne({ _id: ObjectId(data.id) });
         },
 
         createProyecto: async (root, { nombreProyecto, objetivoGen, objetivoEsp,
@@ -307,9 +326,11 @@ const typeDefs = gql`
       user:[user!]!
   }
   
+
   type Mutation{
     signUp(input:SignUpInput):AuthUser!
     signIn(input:SignInInput):AuthUser!
+    updateUser(id:ID!, identificacion:String!, nombre:String!, estado:String!):user!
     createProyecto(nombreProyecto: String!, objetivoGen: String!, objetivoEsp: String!
         presupuesto: String!, fechaFin: String!):Proyecto!
     updateProyecto(id:ID!, nombreProyecto: String!, objetivoGen: String!, objetivoEsp: String!
@@ -330,9 +351,17 @@ const typeDefs = gql`
     estado: String!
     
   }
+  
   input SignInInput{
     mail: String!
     password: String!
+  }
+
+  type UpdateUser{
+    id:ID!
+    identificacion: String!
+    nombre: String!
+    estado: String! 
   }
   type AuthUser{
       user:user!
