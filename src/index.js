@@ -29,7 +29,7 @@ const resolvers = {
                 .find({ userIds: user._id })
                 .toArray();
         },
-
+       
         getProyecto: async (_, { id }, { db, user }) => {  //Ver tareas por ID
             if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
             return await db.collection('proyectos').findOne({ _id: ObjectId(id) });
@@ -42,6 +42,7 @@ const resolvers = {
             const hashedPassword = bcrypt.hashSync(input.password) //hasheamos la contraseña que viene desde el input
             const newUser = { //Creamos al nuevo usuario
                 ...input,
+                estado:"Pendiente",
                 password: hashedPassword,
             }
             const result = await db.collection("usuarios").insertOne(newUser);  //Funcion asincrona que puede recibir 3 argumentos y regresa un objeto
@@ -63,20 +64,21 @@ const resolvers = {
             }
         },
 
-        updateUser: async (_, data, { db, user }) => {
-            //const hashedPassword = bcrypt.hashSync(data.password) 
+        updateUser: async (_, data, password, { db, user }) => {
+            const hashedPassword = bcrypt.hashSync(data.password) 
             if (!user) { console.log("No esta autenticado, por favor inicie sesión.") }  //Solo usuarios correctamente logueados lo pueden hacer
 
             const result = await db.collection("usuarios")
+            //const hashedPassword = bcrypt.hashSync(data.password)
                 .updateOne({
                     _id: ObjectId(data.id)
                    
                 },
                 {
                     $set: data,
-                    
+                    $set:password
                 },{
-                    //password: hashedPassword
+                    password: hashedPassword
                 })
                 
             return await db.collection("usuarios").findOne({ _id: ObjectId(data.id) });
@@ -93,7 +95,7 @@ const resolvers = {
                 fechaFin,
                 estado: "Inactivo",
                 fase: "Null",
-                FechaInicio: new Date().toISOString(),
+                fechaInicio: new Date().toISOString(),
                 userIds: [user._id], //Crea un arreglo donde se guardaran los ID de los usuarios relacionados
                 userNames: [user.nombre],
                 userIdentificacion: [user.identificacion] //Crea un arreglo donde se guardaran los Nombres de los usuarios relacionados
@@ -301,6 +303,7 @@ const typeDefs = gql`
     getProyecto(id: ID!): Proyecto
   }
   
+
   type user{
       id: ID!
       mail: String!
@@ -308,7 +311,7 @@ const typeDefs = gql`
       nombre: String!
       password: String!
       rol: String!
-      estado: String!
+      
       
 
   } 
@@ -330,7 +333,7 @@ const typeDefs = gql`
   type Mutation{
     signUp(input:SignUpInput):AuthUser!
     signIn(input:SignInInput):AuthUser!
-    updateUser(id:ID!, identificacion:String!, nombre:String!, estado:String!):user!
+    updateUser(id:ID!, identificacion:String!, nombre:String!, estado:String!, password:String!):user!
     createProyecto(nombreProyecto: String!, objetivoGen: String!, objetivoEsp: String!
         presupuesto: String!, fechaFin: String!):Proyecto!
     updateProyecto(id:ID!, nombreProyecto: String!, objetivoGen: String!, objetivoEsp: String!
@@ -348,7 +351,7 @@ const typeDefs = gql`
     nombre: String!
     password: String!
     rol: String!
-    estado: String!
+    
     
   }
   
@@ -362,6 +365,7 @@ const typeDefs = gql`
     identificacion: String!
     nombre: String!
     estado: String! 
+    password:String!
   }
   type AuthUser{
       user:user!
