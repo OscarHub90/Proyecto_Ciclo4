@@ -20,12 +20,14 @@ export type RootStackParamList = {
   Home: undefined;
   Información: undefined;
   AvanceScreen: undefined;
+  InscripcionScreen: undefined;
   SignIn: undefined;
   SignUp: undefined;
   Splash:undefined;
   Projects:undefined;
   NewProject:undefined;
   NewAvance:undefined;
+  NewInscripcion:undefined;
   
 };
 

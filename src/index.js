@@ -303,7 +303,6 @@ const typeDefs = gql`
     getProyecto(id: ID!): Proyecto
   }
   
-
   type user{
       id: ID!
       mail: String!
@@ -313,7 +312,6 @@ const typeDefs = gql`
       rol: String!
       
       
-
   } 
   
   type proyectos{
@@ -329,7 +327,6 @@ const typeDefs = gql`
       user:[user!]!
   }
   
-
   type Mutation{
     signUp(input:SignUpInput):AuthUser!
     signIn(input:SignInInput):AuthUser!
@@ -359,7 +356,6 @@ const typeDefs = gql`
     mail: String!
     password: String!
   }
-
   type UpdateUser{
     id:ID!
     identificacion: String!
@@ -401,4 +397,3 @@ type Avance{
     proyecto: Proyecto!
 }
   `;
-
