@@ -23,19 +23,50 @@ const getUserFromToken = async (token, db) => {
 const resolvers = {
     
     Query: {
-        myProyectos: async (_, __, { db, user }) => {  //Ver lista de tareas
-            if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+        myProyectos: async (_, __, { db, user}) => {  //Ver lista de tareas
+           if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+           if (user.rol === "Lider") {
             return await db.collection('proyectos')   //busqueda
                 .find({ userIds: user._id })
                 .toArray();
+           }
+            if (user.rol === "Administrador" || "Estudiante") { 
+            return await db.collection('proyectos')   //busqueda
+            .find()
+            .toArray();
+            }
         },
-       
+        myInscripciones: async (_, __, { db, user}) => {  //Ver lista de tareas
+            if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+            
+             return await db.collection('inscripciones')   //busqueda
+                 .find()
+                 .toArray();
+                        
+         },
+        myAvances: async (_, __, { db, user}) => {  //Ver lista de tareas
+            if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+            
+             return await db.collection('avances')   //busqueda
+                 .find()
+                 .toArray();
+                        
+         },
         getProyecto: async (_, { id }, { db, user }) => {  //Ver tareas por ID
             if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
             return await db.collection('proyectos').findOne({ _id: ObjectId(id) });
+        },
+        getInscripcion: async (_, { id }, { db, user }) => {  //Ver tareas por ID
+            if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+            return await db.collection('inscripciones').findOne({ _id: ObjectId(id) });
+        },
+        getAvance: async (_, { id }, { db, user }) => {  //Ver tareas por ID
+            if (!user) { throw new Error('Error de Autenticación, por favor inicie Sesión'); }
+            return await db.collection('avances').findOne({ _id: ObjectId(id) });
         }
     },
 
+    
     //Mutationes
     Mutation: {
         signUp: async (root, { input }, { db }) => {   //Registrarse
@@ -48,16 +79,18 @@ const resolvers = {
             const result = await db.collection("usuarios").insertOne(newUser);  //Funcion asincrona que puede recibir 3 argumentos y regresa un objeto
             return {  //el esquema pide que se regrese un usuario cuando el proceso se haga bien, al igual que un token
                 user: newUser,
-                token: getToken(newUser),
+                //token: getToken(newUser),
             }
         },
 
         signIn: async (root, { input }, { db }) => {    //Iniciar Sesión
-            const user = await db.collection('usuarios').findOne({ email: input.email }); //compara el email en el input con los que estan en la collecion user
+            const user = await db.collection('usuarios').findOne({ mail: input.mail }); //compara el email en el input con los que estan en la collecion user
             const isPasswordCorrect = user && bcrypt.compareSync(input.password, user.password); //compara el hash del password en el input con los que estan en la collecion user
             if (!user || !isPasswordCorrect) {  //Verificamos si ambas respuestas son true
                 throw new Error('Credenciales erroneas :('); //sino son true, lanzamos error
             }
+            if (user.estado==="Pendiente")
+            throw new Error('Usuario no autorizado :(');
             return {//si son true retornamos la información completa que hay del usuario en la collecion
                 user,
                 token: getToken(user), //asignamos un getToken al campo token
@@ -162,8 +195,8 @@ const resolvers = {
                 fechaInscripcion: new Date().toISOString(),
                 fechaEgreso: "Null",
                 proyectoId: ObjectId(proyectoId),
-                userIds: [user._id], //Crea un arreglo donde se guardaran los ID de los usuarios relacionados
-                userNames: [user.nombre],
+                //userIds: [user._id], //Crea un arreglo donde se guardaran los ID de los usuarios relacionados
+                //userNames: [user.nombre],
                 //proyectoIds: [proyectos._id],
                 //proyectoNames: [proyectos.nombreProyecto]
             }
@@ -187,13 +220,13 @@ const resolvers = {
         },
 
         //Avances
-        createAvance: async (root, { descripAvance, observacion, proyectoId }, { db, user }) => {
+        createAvance: async (root, { descripAvance, observacion, inscripcionId }, { db, user }) => {
             if (!user) { console.log("No esta autenticado, por favor inicie sesión.") }  //Solo usuarios correctamente logueados lo pueden hacer
             const newAvance = {
                 descripAvance,
                 observacion,
                 fechaAvance: new Date().toISOString(),
-                proyectoId: ObjectId(proyectoId),
+                inscripcionId: ObjectId(inscripcionId),
             }
             const result = await db.collection("avances").insertOne(newAvance);
             return newAvance;
@@ -300,7 +333,11 @@ start();  //Arrancamos!
 const typeDefs = gql`   
   type Query {
     myProyectos: [Proyecto!]!
+    myInscripciones: [Inscripcion]!
+    myAvances: [Avance]!
     getProyecto(id: ID!): Proyecto
+    getInscripcion(id:ID!): Inscripcion
+    getAvance(id: ID!): Avance
   }
   
   type user{
@@ -326,7 +363,22 @@ const typeDefs = gql`
       fase: String!
       user:[user!]!
   }
+  type Inscripcion{
+    id: ID!
+    estadoInscripcion: String!
+    fechaInscripcion: String!
+    proyecto: Proyecto!
+    user:[user!]!
+  }
   
+  type Avance{
+    id: ID!
+    descripAvance: String!
+    observacion: String!
+    fechaAvance: String!
+    
+}
+
   type Mutation{
     signUp(input:SignUpInput):AuthUser!
     signIn(input:SignInInput):AuthUser!
@@ -339,7 +391,7 @@ const typeDefs = gql`
     addUserToProyecto(proyectoId: ID!, userId: ID!): Proyecto
     createInscripcion(proyectoId:ID!): Inscripcion!
     updateInscripcion(id:ID!, estadoInscripcion:String!):Inscripcion!
-    createAvance(descripAvance:String!, observacion:String!, proyectoId:ID!):Avance!
+    createAvance(descripAvance:String!, observacion:String!, inscripcionId:ID!):Avance!
     updateAvance(id:ID!,descripAvance:String, observacion: String!):Avance!
   }
   input SignUpInput{
@@ -394,6 +446,7 @@ type Avance{
     descripAvance: String!
     observacion: String!
     fechaAvance: String!
+   
     proyecto: Proyecto!
 }
   `;

@@ -1,97 +1,61 @@
-import React, {useEffect, useState} from 'react';
-import { FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
-import { View, Text } from '../components/Themed';
-import ToDoItem from '../components/ToDoItem';
+import * as React from 'react';
+import { Alert, FlatList, Pressable, StyleSheet } from 'react-native';
+import InscripcionItem from '../components/InscripcionItem';
+import ProjectItem from '../components/ProjectItem';
+import { Text, View } from '../components/Themed';
+import { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useQuery, gql } from '@apollo/client';
+import alert from '../components/Alert';
 import { AntDesign } from '@expo/vector-icons';
 
-const GET_PROJECT = gql`
-query getProyecto($id:ID!) {
-  getProyecto(id:$id) {
+const MY_INSCRIPCION = gql`
+query myInscripciones {
+  myInscripciones {
+  id
+  fechaInscripcion
+  estadoInscripcion
+  proyecto{
     id
     nombreProyecto
-    fechaInicio
-    avances {
-      id
-      descripAvance
-      observacion
-      users{
-      id
-      nombre
-      }
-    }
+  } 
   }
 }
-`
+`;
 
-export default function InscripcionScreen() {
-  const navegation=useNavigation();
+export default function InscripcionesScreen() {
+  const navegation= useNavigation();
   const logOut = async () => {
     await AsyncStorage.removeItem('token');
     navegation.navigate("SignIn")
   }
 
-  const NewInscripcion = async () => {
-    navegation.navigate("NewInscripcion");
+  const newAvance = async () =>{
+    navegation.navigate("NewInscripcion")
   }
-  const [project, setProject] = useState(null);
+
   const [inscripcion, setInscripcion] = useState([]);
-  //const [title, setTitle] = useState('');
+   
 
-  const route = useRoute();
-  const id = route.params.id;
-
-  const {data, error, loading} = useQuery(GET_PROJECT, { variables: { id }})
-  //const idTodo =()=>data.id;
-  /*const [
-    createTodo, { data: createTodoData, error: createTodoError }
-  ] = useMutation(CREATE_TODO, { refetchQueries: GET_PROJECT });*/
+  const { data, error, loading } = useQuery(MY_INSCRIPCION)
 
   useEffect(() => {
     if (error) {
-      console.log(error);
-      alert('Error fetching project');
+      alert("Credeciales equivocadas o Usuario no autorizado")
     }
-  }, [error]);
-
+  }, [error])
+  
   useEffect(() => {
     if (data) {
-      setInscripcion(data.getInscripcion);
-      //setTitle(data.getProyecto.title);
+      setInscripcion(data.myInscripciones);
     }
   }, [data]);
 
-  if (!inscripcion) {
-    return null;
-  }
-
-  
 
   return (
-    <><View style={styles.container}>
-      <Pressable
-      onPress={NewInscripcion} 
-      style={{
-        backgroundColor:'#004080',
-        height:50,
-        borderRadius:5,
-        alignItems:'center',
-        justifyContent:"center",
-        
-        width:'15%',
-        marginHorizontal:"5%",
-      }}>  
-      <Text
-        style={{
-          color:"white",
-          fontSize:18,
-          fontWeight:"bold"
-        }}>
-          Nueva Inscripcion
-        </Text>
-      </Pressable>
+    <View style={styles.container}>
+     
       <Pressable
       onPress={logOut} 
       style={{
@@ -114,23 +78,41 @@ export default function InscripcionScreen() {
           Cerrar Sesión
         </Text>
       </Pressable>
-      <Text style={styles.title}>LISTA DE AVANCES</Text>
+      
+      <Text style={styles.title}>LISTA DE Inscripciones - SoftBox_Free</Text>
       <FlatList
-        data={todo}
-        renderItem={({item}) => <><ToDoItem todo={item} /></>}
+        data={inscripcion}
+        renderItem={({item}) => <><InscripcionItem inscripcion={item} /></>}
         style={{ width: '100%' }}
       />
-      </View></>
+      
+      
+    </View>
+
+    
+
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     padding: 12,
     width:"80%",
     marginHorizontal:"10%"
   },
-  
+  root: {
+    flexDirection: 'row',
+    width: '100%',
+    padding: 10,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#404040',
+    marginRight: 10,
+  },
   title: {
     fontSize: 20,
     borderColor:"white",
@@ -138,14 +120,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign:"center",
     padding: 5,
-    color:"white",
+    color:"black",
     width:"80%",
     marginHorizontal:"10%",
     marginBottom:30
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '100%',
-  },
+  time: {
+    color: 'darkgrey'
+  }
 });

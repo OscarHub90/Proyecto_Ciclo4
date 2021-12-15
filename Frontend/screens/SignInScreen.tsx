@@ -30,10 +30,10 @@ const SignInScreen =() => {
 
   useEffect(() => {
     if (error) {
-      alert("Credeciales equivocadas, por favor intente de nuevo")
+      alert("Credeciales equivocadas o Usuario no autorizado")
     }
   }, [error])
-
+  
   if (data) {
     AsyncStorage.setItem('token', data.signIn.token)
       .then(() => {

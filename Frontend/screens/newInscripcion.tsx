@@ -7,12 +7,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import alert from '../components/Alert';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const GET_INSCRIPCION = gql`
-query getInscripcion($id:ID!) {
-  getInscripcion(id:$id) {
+const GET_PROJECT = gql`
+query getProyecto($id:ID!) {
+  getProyecto(id:$id) {
     id
     nombreProyecto
     objetivoGen
+    inscripcion{
+      id
+      fechaInscipcion
+      estadoInscripcion
+    }
     avance {
       id
       descripAvance
@@ -22,46 +27,49 @@ query getInscripcion($id:ID!) {
 }
 `
 
-const CREATE_AVANCE = gql`
-mutation createAvance($descripAvance:String!, $observacion:String!, $inscripcionId: ID!) {
-  createAvance(descripAvance: $descripAvance, observacion: $observacion, inscripcionId: $inscripcionId) {
+const CREATE_INSCRIPCION = gql`
+mutation createInscripcion($proyectoId: ID!) {
+  createInscripcion(proyectoId: $proyectoId) {
     id
-		descripAvance
-    observacion
-    fechaAvance
-   
-      
+		fechaInscripcion
+    estadoInscripcion
+    proyecto {
+      id
+      nombreProyecto
+      avances {
+        id
+        descripAvance
+        observacion
+        fechaAvance
+      }
     }
   }
-`;
+}
+`
 
 
 
 const newAvanceScreen =() => {
   const navigate=useNavigation()
-  const [descripAvance, setDescripAvance]=useState("")
-  const [observacion, setObservacion]=useState("")
   const route=useRoute();
   const id = route.params.id;
 
   const {
     data, error, loading
-  } = useQuery(GET_INSCRIPCION, { variables: { id }})
+  } = useQuery(GET_PROJECT, { variables: { id }})
 
   const [
-    createAvance, { data: createTodoData, error: createTodoError }
-  ] = useMutation(CREATE_AVANCE, { refetchQueries: GET_INSCRIPCION });
+    createInscripcion, { data: createTodoData, error: createTodoError }
+  ] = useMutation(CREATE_INSCRIPCION, { refetchQueries: GET_PROJECT });
   
   const createNewItem = () => {
-    createAvance({
+    createInscripcion({
       variables: {
-        descripAvance: descripAvance,
-        observacion: observacion,
-        inscripcionId: id,
+        proyectoId: id,
       }
     })
   alert("Avance registrado correctamente")
-  navigate.navigate("AvanceScreen")
+  navigate.navigate("InscripcionScreen")
   }
 
   return (
@@ -70,34 +78,9 @@ const newAvanceScreen =() => {
           alignSelf:"center",
           fontSize:25,
           fontWeight:"bold"
-      }}>Registro Avance</Text>
+      }}>Registro Inscripcion</Text>
       
-    <TextInput
-    placeholder="Nombre del To Do"
-    value={descripAvance}
-    onChangeText={setDescripAvance}
-    style={{
-      color:"black",
-      fontSize:18,
-      marginVertical:25,
-      width:'50%',
-      marginHorizontal:"25%"
-    }}
-    />
-
-<TextInput
-    placeholder="Nombre del To Do"
-    value={observacion}
-    onChangeText={setObservacion}
-    style={{
-      color:"black",
-      fontSize:18,
-      marginVertical:25,
-      width:'50%',
-      marginHorizontal:"25%"
-    }}
-    />
-
+   
 <Pressable
 onPress={() => createNewItem()} 
   style={{
@@ -118,7 +101,7 @@ onPress={() => createNewItem()}
         fontSize:18,
         fontWeight:"bold"
       }} >
-        Crear avance
+        Crear Inscripcion
         </Text>
   </Pressable>
     </View>

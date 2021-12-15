@@ -24,13 +24,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginRight: 5,
     color: 'black',
-    
-  },
-  proj: {
-    fontSize: 20,
-    marginRight: 5,
-    color: 'black',
-    
   },
   time: {
     color: 'darkgrey',

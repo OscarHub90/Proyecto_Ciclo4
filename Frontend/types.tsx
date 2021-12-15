@@ -28,6 +28,7 @@ export type RootStackParamList = {
   NewProject:undefined;
   NewAvance:undefined;
   NewInscripcion:undefined;
+  NavBar:undefined;
   
 };
 

@@ -58,7 +58,7 @@ const NewProyectScreen =() => {
 
   if (data) {
         alert("Proyecto creado Correctamente")
-        navegation.navigate("Projects");
+        navegation.navigate("Home");
         reload()
   }
 
@@ -74,7 +74,7 @@ const NewProyectScreen =() => {
           alignSelf:"center",
           fontSize:25,
           fontWeight:"bold"
-      }}>Registro de Nuevo Proyecto</Text>
+      }}>Registro de Nuevo Proyecto - SoftBox_Free</Text>
       
     <TextInput
     placeholder="Nombre del Proyecto"

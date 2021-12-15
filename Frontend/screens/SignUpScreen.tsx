@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Picker, Pressable, TextInput } from 'react-na
 import { Text, View } from '../components/Themed';
 import { useMutation, gql } from '@apollo/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Swal from 'sweetalert2';
 
 
 
@@ -59,13 +60,24 @@ const SignUpScreen =() => {
   if (data) {
     AsyncStorage.setItem('token', data.signUp.token)
       .then(() => {
-        navegation.navigate("Home");
+        navegation.navigate("SignIn");
       })
   }
 
   const onSubmit = () =>{
     signUp({variables: {mail,identificacion, nombre,password,rol}})
+    { 
+      Swal.fire({
+        position: 'center',
+                    icon: 'success',
+                    title: 'Usuario creado con exito',
+                    showConfirmButton: false,
+                    timer: 1900
+    });
+    navegation.navigate("SignIn")
+  } 
   }
+ 
  
 
   return (

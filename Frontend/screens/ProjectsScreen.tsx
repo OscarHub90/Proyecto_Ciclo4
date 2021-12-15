@@ -98,7 +98,7 @@ export default function ProjectsScreen() {
         </Text>
       </Pressable>
       
-      <Text style={styles.title}>LISTA DE PROYECTOS</Text>
+      <Text style={styles.title}>LISTA DE PROYECTOS - SoftBox_Free</Text>
       <FlatList
         data={project}
         renderItem={({item}) => <><ProjectItem project={item} /></>}

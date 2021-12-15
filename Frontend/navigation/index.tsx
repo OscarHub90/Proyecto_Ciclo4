@@ -13,6 +13,7 @@ import { AntDesign } from '@expo/vector-icons';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import NotFoundScreen from '../screens/NotFoundScreen';
+import InscripcionScreen from '../screens/InscripcionScreen';
 import AvanceScreen from '../screens/AvanceScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
@@ -22,7 +23,9 @@ import SignUpScreen from '../screens/SignUpScreen';
 import SplashScreen from '../screens/SplashScreen';
 import InformationScreen from '../screens/InformationScreen';
 import NewProyectScreen from '../screens/newProyectScreen';
+import newInscripcion from '../screens/newInscripcion';
 import newAvance from '../screens/newAvance';
+import NavBar from '../screens/NavBar';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -46,13 +49,16 @@ function RootNavigator() {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="Root" component={SplashScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Screen name="Home" component={ProjectsScreen} />
+      <Stack.Screen name="PrejectScreen" component={ProjectsScreen} />
       <Stack.Screen name="Projects" component={ProjectsScreen} />
+      <Stack.Screen name="InscripcionScreen" component={InscripcionScreen} />
       <Stack.Screen name="AvanceScreen" component={AvanceScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="NewProject" component={NewProyectScreen} />
+      <Stack.Screen name="NewInscripcion" component={newInscripcion} />
       <Stack.Screen name="NewAvance" component={newAvance} />
+      <Stack.Screen name="Home" component={NavBar} />
     </Stack.Navigator>
   );
 }
@@ -74,9 +80,9 @@ function RootNavigator() {
        }}>
        <BottomTab.Screen
          name="TabOne"
-         component={ProjectsScreen}
+         component={NavBar}
          options={({ navigation }: RootTabScreenProps<'TabOne'>) => ({
-           title: 'Home',
+           title: 'NavBar',
            tabBarIcon: ({ color }) => <AntDesign name="home" size={24} color="white" />,
          })}
        />
